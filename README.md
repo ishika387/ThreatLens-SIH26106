@@ -1,9 +1,6 @@
 # ThreatLens-SIH26106
 # ThreatLens – AI-Powered Email Threat Detection & Forensic Intelligence Platform
 
-
-🚀 **[Live Prototype](file:///C:/Users/Ishika%20Borasi/OneDrive/Documents/codsoft/prototype.html)**
-
 📄 **SIH 2026 | Problem Statement SIH26106**
 ## SIH 2026 | Problem Statement SIH26106
 
