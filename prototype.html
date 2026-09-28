@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatLens - Email Threat & Forensic Intelligence Platform</title>
+<style>
+  :root {
+    --bg-dark: #0f172a;
+    --sidebar-bg: #1e293b;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-blue: #38bdf8;
+    --accent-red: #ef4444;
+    --accent-green: #22c55e;
+    --accent-amber: #f59e0b;
+    --card-border: 1px solid #334155;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { background: var(--bg-dark); color: var(--text-primary); display: flex; height: 100vh; overflow: hidden; }
+
+  /* Navigation Sidebar */
+  aside {
+    width: 250px;
+    background: var(--sidebar-bg);
+    border-right: var(--card-border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 14px;
+    flex-shrink: 0;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; padding: 0 8px; }
+  .brand-logo { width: 34px; height: 34px; background: #2563eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .brand-text h1 { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.5px; }
+  .brand-text p { font-size: 10px; color: var(--accent-blue); font-weight: 600; text-transform: uppercase; }
+
+  .nav-menu { display: flex; flex-direction: column; gap: 6px; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-item:hover, .nav-item.active { background: #0ea5e920; color: var(--accent-blue); }
+
+  /* Main Workspace */
+  main { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+  header {
+    height: 60px;
+    border-bottom: var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: #0f172a80;
+  }
+  .header-tag { font-size: 12px; color: var(--text-secondary); }
+  .badge-sih { background: #22c55e20; color: var(--accent-green); border: 1px solid var(--accent-green); font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 700; }
+
+  .view-container { flex-grow: 1; padding: 24px; overflow-y: auto; display: none; }
+  .view-container.active { display: block; }
+
+  /* UI Cards */
+  .grid-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .stat-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; }
+  .stat-num { font-size: 32px; font-weight: 800; color: #fff; }
+
+  /* Tables */
+  .table-box { background: var(--card-bg); border: var(--card-border); border-radius: 10px; overflow: hidden; }
+  .table-head { padding: 14px 20px; border-bottom: var(--card-border); display: flex; justify-content: space-between; align-items: center; }
+  .table-head h3 { font-size: 14px; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+  th { background: #0f172a40; color: var(--text-secondary); padding: 12px 20px; font-weight: 600; }
+  td { padding: 12px 20px; border-bottom: 1px solid #33415540; }
+  tr:hover td { background: #33415520; }
+  .badge-risk { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+  .risk-high { background: #ef444420; color: var(--accent-red); border: 1px solid #ef444440; }
+  .risk-med { background: #f59e0b20; color: var(--accent-amber); border: 1px solid #f59e0b40; }
+  .risk-low { background: #22c55e20; color: var(--accent-green); border: 1px solid #22c55e40; }
+
+  /* Screen 2: Upload Area */
+  .upload-box {
+    border: 2px dashed #38bdf860;
+    border-radius: 12px;
+    height: 340px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: #1e293b50;
+    cursor: pointer;
+  }
+  .upload-box:hover { border-color: var(--accent-blue); background: #1e293b90; }
+  .btn-primary {
+    background: #0284c7;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .btn-primary:hover { background: #0369a1; }
+
+  /* Screen 3: Analysis Results */
+  .result-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 20px; }
+  .score-card {
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: 10px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+  .gauge {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 10px solid #ef4444;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 10px 0;
+  }
+  .gauge span.score { font-size: 34px; font-weight: 900; }
+  .gauge span.sub { font-size: 10px; color: var(--text-secondary); }
+
+  .factors-card { background: var(--card-bg); border: var(--card-border); border-radius: 10px; padding: 20px; }
+  .factor-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #33415550; font-size: 13px; }
+  .factor-item:last-child { border: none; }
+  .weight { color: var(--accent-red); font-weight: 700; }
+
+  /* Screen 4: Threat Evidence Graph */
+  .graph-wrapper {
+    background: #0b1120;
+    border: var(--card-border);
+    border-radius: 10px;
+    height: 480px;
+    position: relative;
+    overflow: hidden;
+  }
+  svg.graph-svg { width: 100%; height: 100%; }
+
+  /* Screen 5: Forensic Report */
+  .report-box { background: #ffffff; color: #0f172a; border-radius: 10px; padding: 30px; max-width: 800px; margin: 0 auto; }
+  .report-header { border-bottom: 2px solid #e2e8f0; padding-bottom: 14px; margin-bottom: 18px; display: flex; justify-content: space-between; }
+  .report-header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
+  .report-sec { margin-bottom: 18px; }
+  .report-sec h4 { font-size: 11px; text-transform: uppercase; color: #64748b; margin-bottom: 6px; letter-spacing: 0.5px; border-bottom: 1px solid #f1f5f9; padding-bottom: 3px; }
+  .report-row { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px; }
+  .timeline-entry { font-size: 12px; margin-bottom: 4px; display: flex; gap: 14px; }
+  .timeline-time { color: #64748b; font-weight: 600; width: 60px; }
+</style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <aside>
+    <div class="brand">
+      <div class="brand-logo">🛡️</div>
+      <div class="brand-text">
+        <h1>ThreatLens</h1>
+        <p>Forensic AI Platform</p>
+      </div>
+    </div>
+    <div class="nav-menu">
+      <div class="nav-item active" onclick="switchTab('screen-dashboard')">📊 1. Dashboard</div>
+      <div class="nav-item" onclick="switchTab('screen-upload')">📤 2. Upload .eml</div>
+      <div class="nav-item" onclick="switchTab('screen-analysis')">🧠 3. Threat Analysis</div>
+      <div class="nav-item" onclick="switchTab('screen-graph')">🕸️ 4. Evidence Graph</div>
+      <div class="nav-item" onclick="switchTab('screen-report')">📋 5. Forensic Report</div>
+    </div>
+  </aside>
+
+  <!-- Content Workspace -->
+  <main>
+    <header>
+      <div class="header-tag">Incident: <strong>#INC-2026-9041 (invoice_urgent.eml)</strong></div>
+      <div class="badge-sih">SIH 2026 • PS: SIH26106</div>
+    </header>
+
+    <!-- SCREEN 1: DASHBOARD -->
+    <section id="screen-dashboard" class="view-container active">
+      <div class="grid-stats">
+        <div class="stat-card">
+          <div class="stat-label">Total Emails Analyzed</div>
+          <div class="stat-num">128</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid var(--accent-red);">
+          <div class="stat-label">Identified Threats</div>
+          <div class="stat-num" style="color: var(--accent-red);">37</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid var(--accent-amber);">
+          <div class="stat-label">Correlated Campaigns</div>
+          <div class="stat-num" style="color: var(--accent-amber);">6</div>
+        </div>
+      </div>
+
+      <div class="table-box">
+        <div class="table-head">
+          <h3>Recent Forensic Investigations</h3>
+          <button class="btn-primary" onclick="switchTab('screen-upload')">+ Analyze New Email</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>File Name</th>
+              <th>Threat Type</th>
+              <th>Risk Score</th>
+              <th>Verdict</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>invoice_overdue.eml</td>
+              <td>Credential Harvesting Phishing</td>
+              <td><span class="badge-risk risk-high">87 / 100</span></td>
+              <td style="color:var(--accent-red); font-weight:700;">HIGH RISK</td>
+              <td><a href="#" onclick="switchTab('screen-analysis')" style="color:var(--accent-blue); font-size:12px;">View Analysis →</a></td>
+            </tr>
+            <tr>
+              <td>cloud_update_alert.eml</td>
+              <td>Benign Newsletter</td>
+              <td><span class="badge-risk risk-low">18 / 100</span></td>
+              <td style="color:var(--accent-green); font-weight:700;">LOW RISK</td>
+              <td><a href="#" style="color:var(--accent-blue); font-size:12px;">View Analysis →</a></td>
+            </tr>
+            <tr>
+              <td>password_reset_req.eml</td>
+              <td>Suspicious Spoofing Attempt</td>
+              <td><span class="badge-risk risk-med">54 / 100</span></td>
+              <td style="color:var(--accent-amber); font-weight:700;">MEDIUM RISK</td>
+              <td><a href="#" style="color:var(--accent-blue); font-size:12px;">View Analysis →</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: UPLOAD .EML -->
+    <section id="screen-upload" class="view-container">
+      <div style="max-width: 650px; margin: 40px auto; text-align: center;">
+        <h2 style="font-size: 22px; margin-bottom: 8px;">Forensic Email Ingestion</h2>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 24px;">Upload standard RFC 822/5322 MIME messages (.eml) to preserve headers & routing metadata.</p>
+        
+        <div class="upload-box" onclick="simulateUpload()">
+          <div style="font-size: 48px;">📧</div>
+          <div style="font-size: 16px; font-weight: 700;">Drag & Drop .eml File Here</div>
+          <div style="color: var(--text-secondary); font-size: 12px;">Supported format: .eml / raw RFC message</div>
+          <div style="margin-top: 10px;">
+            <button class="btn-primary">Browse Files</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: ANALYSIS RESULT -->
+    <section id="screen-analysis" class="view-container">
+      <div class="result-grid">
+        
+        <div class="score-card">
+          <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Unified Risk Decision</div>
+          <div class="gauge">
+            <span class="score" style="color: var(--accent-red);">87</span>
+            <span class="sub">/ 100</span>
+          </div>
+          <div style="font-size: 16px; font-weight: 800; color: var(--accent-red);">HIGH RISK (Phishing)</div>
+          <div style="font-size: 12px; color: var(--text-secondary);">Model Confidence: <strong>Rule-Based Protoype</strong></div>
+          <div style="margin-top: 10px; width: 100%;">
+            <button class="btn-primary" style="width: 100%;" onclick="switchTab('screen-graph')">View Threat Evidence Graph →</button>
+          </div>
+        </div>
+
+        <div class="factors-card">
+          <h3 style="font-size: 15px; margin-bottom: 12px;">Explainable Risk Factors ("Why this score?")</h3>
+          
+          <div class="factor-item">
+            <span>🚨 Deceptive / Lookalike Target URL</span>
+            <span class="weight">+25 pts</span>
+          </div>
+          <div class="factor-item">
+            <span>❌ SPF Domain Alignment Failure</span>
+            <span class="weight">+20 pts</span>
+          </div>
+          <div class="factor-item">
+            <span>⚠️ Domain Mismatch (Sender vs Return-Path)</span>
+            <span class="weight">+15 pts</span>
+          </div>
+          <div class="factor-item">
+            <span>🛑 High-Urgency NLP Threat Content</span>
+            <span class="weight">+15 pts</span>
+          </div>
+          <div class="factor-item">
+            <span>⚡ Suspicious Intermediate Relay Hop</span>
+            <span class="weight">+12 pts</span>
+          </div>
+
+          <div style="margin-top: 16px; padding-top: 10px; border-top: 2px solid #334155; display: flex; justify-content: space-between; font-weight: 800;">
+            <span>Total Cumulative Score</span>
+            <span style="color: var(--accent-red);">87 / 100</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SCREEN 4: THREAT EVIDENCE GRAPH (MAIN USP) -->
+    <section id="screen-graph" class="view-container">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div>
+          <h3 style="font-size: 16px; font-weight: 800;">Threat Evidence Knowledge Graph (USP)</h3>
+          <p style="font-size: 11px; color: var(--text-secondary);">Visualizing infrastructure relationships, sender hops, and correlated campaigns</p>
+        </div>
+        <button class="btn-primary" onclick="switchTab('screen-report')">Generate Forensic Report →</button>
+      </div>
+
+      <div class="graph-wrapper">
+        <svg class="graph-svg" viewBox="0 0 800 420">
+          <!-- Connection Lines -->
+          <line x1="400" y1="50" x2="400" y2="130" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4" />
+          <line x1="200" y1="150" x2="350" y2="150" stroke="#38bdf8" stroke-width="2" />
+          <line x1="400" y1="170" x2="250" y2="250" stroke="#38bdf8" stroke-width="2" />
+          <line x1="400" y1="170" x2="400" y2="250" stroke="#38bdf8" stroke-width="2" />
+          <line x1="400" y1="170" x2="550" y2="250" stroke="#38bdf8" stroke-width="2" />
+          <line x1="250" y1="290" x2="400" y2="360" stroke="#38bdf8" stroke-width="2" />
+          <line x1="550" y1="290" x2="400" y2="360" stroke="#38bdf8" stroke-width="2" />
+
+          <!-- Campaign Node -->
+          <rect x="320" y="20" width="160" height="34" rx="6" fill="#f59e0b" />
+          <text x="400" y="42" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">Related Campaign: #FinPhish</text>
+
+          <!-- Email Core Node -->
+          <rect x="350" y="130" width="100" height="40" rx="8" fill="#ef4444" />
+          <text x="400" y="155" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">invoice.eml</text>
+
+          <!-- Sender Node -->
+          <rect x="130" y="132" width="130" height="36" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+          <text x="195" y="154" fill="#f8fafc" font-size="11" text-anchor="middle">Sender: admin@pay.com</text>
+
+          <!-- Indicators -->
+          <rect x="180" y="250" width="140" height="36" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+          <text x="250" y="272" fill="#f8fafc" font-size="11" text-anchor="middle">Domain: pay-verify.ru</text>
+
+          <rect x="340" y="250" width="120" height="36" rx="6" fill="#1e293b" stroke="#ef4444" stroke-width="1.5" />
+          <text x="400" y="272" fill="#f8fafc" font-size="11" text-anchor="middle">URL: /auth/login</text>
+
+          <rect x="490" y="250" width="120" height="36" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+          <text x="550" y="272" fill="#f8fafc" font-size="11" text-anchor="middle">IP: 185.220.101.4</text>
+
+          <!-- Infrastructure Node -->
+          <rect x="320" y="360" width="160" height="34" rx="6" fill="#7c3aed" />
+          <text x="400" y="382" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">Host: Bulletproof AS49505</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- SCREEN 5: FORENSIC REPORT -->
+    <section id="screen-report" class="view-container">
+      <div class="report-box">
+        <div class="report-header">
+          <div>
+            <h2>FORENSIC INVESTIGATION REPORT</h2>
+            <div style="font-size:11px; color:#64748b; margin-top:2px;">ThreatLens Incident Evidence & Chain of Custody</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: 800; font-size: 13px;">EV-2026-00124</div>
+            <div style="font-size: 11px; color: #ef4444; font-weight: 700;">HIGH THREAT • PHISHING</div>
+          </div>
+        </div>
+
+        <div class="report-sec">
+          <h4>Cryptographic Metadata</h4>
+          <div class="report-row"><span>SHA-256 Digest:</span><code style="font-size:11px;">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</code></div>
+          <div class="report-row"><span>Ingestion Timestamp:</span><span>2026-09-28 20:32:14 UTC</span></div>
+        </div>
+
+        <div class="report-sec">
+          <h4>Extracted Threat Artifacts</h4>
+          <div class="report-row"><span>Sender Address:</span><strong>attacker@pay-verify.ru</strong></div>
+          <div class="report-row"><span>Origin Relay IP:</span><strong>185.220.101.4 (Russia)</strong></div>
+          <div class="report-row"><span>Target Malicious URL:</span><strong>https://pay-verify.ru/login.php</strong></div>
+        </div>
+
+        <div class="report-sec">
+          <h4>Email Protocol Authentication</h4>
+          <div class="report-row"><span>SPF (Sender Policy Framework):</span><span style="color:#ef4444; font-weight:700;">FAIL (Mismatched Origin)</span></div>
+          <div class="report-row"><span>DKIM (Signature Integrity):</span><span style="color:#ef4444; font-weight:700;">FAIL (Body Hash Unverified)</span></div>
+          <div class="report-row"><span>DMARC Policy:</span><span style="color:#ef4444; font-weight:700;">REJECT</span></div>
+        </div>
+
+        <div class="report-sec">
+          <h4>Chain of Custody Audit Trail</h4>
+          <div class="timeline-entry"><div class="timeline-time">20:32:10</div><div>.eml MIME package uploaded and cryptographically indexed.</div></div>
+          <div class="timeline-entry"><div class="timeline-time">20:32:12</div><div>Headers parsed, routing relays decoded, URL tokens isolated.</div></div>
+          <div class="timeline-entry"><div class="timeline-time">20:32:14</div><div>Multi-Signal Scorer calculated 87/100 risk score with XAI tree.</div></div>
+          <div class="timeline-entry"><div class="timeline-time">20:32:15</div><div>Adversary infrastructure correlated to active campaign cluster.</div></div>
+        </div>
+
+        <div style="margin-top: 20px; text-align: right;">
+          <button class="btn-primary" onclick="alert('Forensic PDF with digital signature downloaded successfully.')">📥 Download Signed Forensic Report</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function switchTab(screenId) {
+      document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(screenId).classList.add('active');
+      
+      const tabIndex = ['screen-dashboard', 'screen-upload', 'screen-analysis', 'screen-graph', 'screen-report'].indexOf(screenId);
+      if(tabIndex !== -1) {
+        document.querySelectorAll('.nav-item')[tabIndex].classList.add('active');
+      }
+    }
+
+    function simulateUpload() {
+      alert("Parsing invoice_overdue.eml ... Running multi-signal AI analysis.");
+      switchTab('screen-analysis');
+    }
+  </script>
+</body>
+</html>
